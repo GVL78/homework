@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64">
+  <defs>
+    <linearGradient id="brand-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1" />
+      <stop offset="50%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <!-- Book Base / Shield -->
+  <path d="M12,21.5C9.5,19.8 4,19.5 2,20V5C4,4.5 9.5,4.8 12,6.5C14.5,4.8 20,4.5 22,5V20C20,19.5 14.5,19.8 12,21.5Z" fill="url(#brand-grad)" />
+  <!-- Pages details -->
+  <path d="M12,6.5V21.5" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" opacity="0.3" />
+  <!-- AI Sparkle / Star -->
+  <path d="M12,3L13.2,5.8L16,7L13.2,8.2L12,11L10.8,8.2L8,7L10.8,5.8Z" fill="#FFFFFF" filter="url(#glow)" />
+  <path d="M6,14L6.5,15.2L7.7,15.7L6.5,16.2L6,17.4L5.5,16.2L4.3,15.7L5.5,15.2Z" fill="#F59E0B" />
+  <path d="M18,14L18.5,15.2L19.7,15.7L18.5,16.2L18,17.4L17.5,16.2L16.3,15.7L17.5,15.2Z" fill="#8B5CF6" />
+</svg>

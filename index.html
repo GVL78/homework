@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomeworkMaster - Flemish Homework Builder & AI Assistant</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- MathJax for rendering math fractions and formulas beautifully -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+  <!-- Glowing background elements for visual aesthetics -->
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+
+  <div class="app-container">
+    
+    <!-- 1. LEFT NAVIGATION RAIL -->
+    <nav class="nav-rail">
+      <div class="brand-logo" onclick="switchView('dashboard')" title="HomeworkMaster Home">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+          <path d="M12,21.5C9.5,19.8 4,19.5 2,20V5C4,4.5 9.5,4.8 12,6.5C14.5,4.8 20,4.5 22,5V20C20,19.5 14.5,19.8 12,21.5Z" fill="#FFFFFF" opacity="0.9" />
+          <path d="M12,3L13.2,5.8L16,7L13.2,8.2L12,11L10.8,8.2L8,7L10.8,5.8Z" fill="#F59E0B" />
+        </svg>
+      </div>
+      
+      <button class="rail-btn active" data-view="dashboard" data-tooltip="Dashboard">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+      </button>
+      
+      <button class="rail-btn" data-view="channels" data-tooltip="Workspaces (Chat & Exercises)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      </button>
+      
+      <button class="rail-btn" data-view="mistakes" data-tooltip="Mistakes & Remediation">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      </button>
+      
+      <button class="rail-btn rail-btn-settings" data-view="settings" data-tooltip="Settings & API Key">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </button>
+    </nav>
+    
+    <!-- 2. WORKSPACE SIDEBAR CHANNELS -->
+    <aside class="sidebar hidden" id="sidebar-channels">
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">Workspaces</h2>
+        <span class="sidebar-subtitle">Grades & Subjects</span>
+      </div>
+      
+      <div class="sidebar-scroll">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">
+            <span>My Subjects</span>
+            <button class="add-channel-btn" onclick="openNewChannelModal()" title="Add new subject">+</button>
+          </div>
+          <div class="channel-list" id="sidebar-channels-list">
+            <!-- Rendered Dynamically in app.js -->
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 3. VIEWS CONTAINER -->
+    <main class="main-workspace">
+      
+      <!-- DASHBOARD VIEW PANEL -->
+      <section class="view-container" id="view-dashboard" style="display: block;">
+        <!-- Rendered Dynamically in app.js -->
+      </section>
+
+      <!-- MISTAKES VIEW PANEL -->
+      <section class="view-container" id="view-mistakes" style="display: none;">
+        <!-- Rendered Dynamically in app.js -->
+      </section>
+
+      <!-- SETTINGS VIEW PANEL -->
+      <section class="view-container" id="view-settings" style="display: none;">
+        <!-- Rendered Dynamically in app.js -->
+      </section>
+      
+      <!-- WORKSPACE CHANNELS (LIVE CHAT & PREVIEW VIEW) -->
+      <section class="workspace-content" id="view-channels" style="display: none;">
+        
+        <!-- Left Panel: Chat input, guidelines and parameter adjustments -->
+        <div class="workspace-left-panel">
+          
+          <!-- Header info -->
+          <div class="workspace-header" id="workspace-header-container">
+            <!-- Rendered Dynamically in app.js -->
+          </div>
+          
+          <!-- Uploaded files display -->
+          <div class="materials-bar" id="materials-bar-container" style="display: none;">
+            <!-- Rendered Dynamically in app.js -->
+          </div>
+          
+          <!-- Chat Message Thread -->
+          <div class="chat-area" id="chat-messages">
+            <!-- Chat history is injected here -->
+          </div>
+          
+          <!-- Parameters & Input composer -->
+          <div class="input-composer">
+            
+            <!-- Quick Configuration Wizard -->
+            <div class="generator-wizard">
+              <div class="wizard-title">
+                <span>⚙️ Homework Generator</span>
+              </div>
+              <div class="form-grid">
+                <div class="form-group" style="display:none;">
+                  <input type="hidden" id="param-grade">
+                  <input type="hidden" id="param-subject">
+                  <input type="hidden" id="param-textbook">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="param-count">Number of Exercises</label>
+                  <select id="param-count" class="form-input">
+                    <option value="5">5 Exercises</option>
+                    <option value="10" selected>10 Exercises</option>
+                    <option value="20">20 Exercises</option>
+                    <option value="40">40 Exercises</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Quick Generate</label>
+                  <button class="btn btn-flemish" onclick="triggerManualGeneration()" style="height: 35px; justify-content: center; width: 100%;">
+                    ⚡ Generate Sheet
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- File dropzone / Upload input -->
+            <div class="upload-zone">
+              <div class="upload-icon">📁</div>
+              <div class="upload-text">Drag learning materials or homework files here or <strong>click to browse</strong></div>
+              <div class="upload-subtext">Supports .txt, .md, .html, .htm files to provide curriculum context or student answers</div>
+              <input type="file" id="file-upload" class="upload-file-input" accept=".txt,.md,.html,.htm" multiple>
+            </div>
+            
+            <!-- Text message row -->
+            <div class="input-row">
+              <textarea id="chat-input-text" class="composer-textarea" placeholder="Type your instructions (e.g. 'Generate 10 exercises on fractions')..."></textarea>
+              <button class="composer-send-btn" onclick="handleChatSubmit()" title="Send">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              </button>
+            </div>
+            
+          </div>
+        </div>
+        
+        <!-- Right Panel: Live interactive previews -->
+        <div class="workspace-right-panel">
+          
+          <div class="preview-tabs">
+            <button class="preview-tab active" id="tab-opgaven" onclick="switchPreviewTab('opgaven')">
+              📝 Exercises (Werkblad)
+            </button>
+            <button class="preview-tab" id="tab-oplossingen" onclick="switchPreviewTab('oplossingen')">
+              🔑 Solutions (Antwoorden)
+            </button>
+          </div>
+          
+          <div class="preview-body" id="preview-sheet-area">
+            <!-- Sheet content renders here dynamically -->
+          </div>
+          
+          <div class="preview-actions-bar" style="gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-secondary" onclick="copyToClipboard()" style="background: rgba(255,255,255,0.05); flex: 1; justify-content: center; min-width: 130px;">
+              📋 Copy to Clipboard
+            </button>
+            <button class="btn btn-secondary" onclick="downloadWorksheet()" style="background: rgba(255,255,255,0.05); flex: 1; justify-content: center; min-width: 130px;">
+              💾 Download HTML
+            </button>
+            <button class="btn btn-primary" onclick="printWorksheet()" style="flex: 1.2; justify-content: center; min-width: 130px;">
+              🖨️ Print / Save PDF
+            </button>
+          </div>
+          
+        </div>
+        
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL 1: NEW CHANNEL / WORKSPACE -->
+  <div class="modal-overlay" id="modal-new-channel">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="font-size: 18px;">Open New Learning Workspace</h3>
+        <button class="modal-close" onclick="closeNewChannelModal()">&times;</button>
+      </div>
+      <form id="new-channel-form">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="channel-form-student">Child's Name</label>
+          <input type="text" id="channel-form-student" class="form-input" placeholder="e.g. Laura" required>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="channel-form-level">School Level</label>
+          <select id="channel-form-level" class="form-input">
+            <option value="primary" selected>Primary School (Basisonderwijs)</option>
+            <option value="secondary">Secondary / Middle School (Middelbaar)</option>
+          </select>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="channel-form-grade">Grade / Year</label>
+          <input type="text" id="channel-form-grade" class="form-input" placeholder="e.g. 6th Grade or 1st Degree Latin" required>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="channel-form-subject">Subject / Discipline</label>
+          <select id="channel-form-subject" class="form-input" onchange="toggleCustomSubjectInput(this.value)">
+            <option value="Mathematics" selected>Mathematics / Arithmetic (Wiskunde)</option>
+            <option value="Dutch">Dutch (Nederlands)</option>
+            <option value="French">French (Frans)</option>
+            <option value="Latin">Latin (Latijn)</option>
+            <option value="English">English (Engels)</option>
+            <option value="Sciences">Sciences / Physics (Natuurwetenschappen)</option>
+            <option value="History">History / Geography (Geschiedenis/WO)</option>
+            <option value="Other">Other (Custom Subject)</option>
+          </select>
+        </div>
+        
+        <div class="form-group" id="custom-subject-group" style="margin-bottom: 12px; display: none;">
+          <label class="form-label" for="channel-form-custom-subject">Custom Subject Name</label>
+          <input type="text" id="channel-form-custom-subject" class="form-input" placeholder="e.g. German, Economics">
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label" for="channel-form-textbook">Used Textbook / Method (Optional)</label>
+          <input type="text" id="channel-form-textbook" class="form-input" placeholder="e.g. Reken Maar! 6 or Pegasus 2">
+        </div>
+        
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary" onclick="closeNewChannelModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Workspace</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: ADD MISTAKE ENTRY -->
+  <div class="modal-overlay" id="modal-new-mistake">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="font-size: 18px;">Register Learning Mistake</h3>
+        <button class="modal-close" onclick="closeNewMistakeModal()">&times;</button>
+      </div>
+      <form id="new-mistake-form">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="mistake-form-student">Child's Name</label>
+          <input type="text" id="mistake-form-student" class="form-input" placeholder="e.g. Laura" required>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="mistake-form-subject">Subject</label>
+          <select id="mistake-form-subject" class="form-input" onchange="toggleCustomSubjectMistakeInput(this.value)">
+            <option value="Mathematics" selected>Mathematics (Wiskunde)</option>
+            <option value="Dutch">Dutch (Nederlands)</option>
+            <option value="French">French (Frans)</option>
+            <option value="Latin">Latin (Latijn)</option>
+            <option value="English">English (Engels)</option>
+            <option value="Sciences">Sciences / Physics</option>
+            <option value="History">History</option>
+            <option value="Other">Other (Custom Subject)</option>
+          </select>
+        </div>
+        
+        <div class="form-group" id="custom-subject-mistake-group" style="margin-bottom: 12px; display: none;">
+          <label class="form-label" for="mistake-form-custom-subject">Custom Subject Name</label>
+          <input type="text" id="mistake-form-custom-subject" class="form-input" placeholder="e.g. German, Economics">
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="mistake-form-topic">Topic / Category</label>
+          <input type="text" id="mistake-form-topic" class="form-input" placeholder="e.g. Dividing decimals or D-T verb rules" required>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label" for="mistake-form-desc">Description of the Mistake</label>
+          <textarea id="mistake-form-desc" class="form-input" style="height: 100px; resize: none; font-family: inherit;" placeholder="Describe what went wrong. e.g. Laura forgets to shift the decimal point when dividing by decimals." required></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary" onclick="closeNewMistakeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Mistake</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Load script at the end -->
+  <script src="app.js"></script>
+</body>
+</html>
