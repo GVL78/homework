@@ -305,16 +305,45 @@ function renderChannelsList() {
     const subjectClass = ch.subject.toLowerCase().replace(/\s+/g, '-');
     
     return `
-      <div class="channel-item ${isActive ? 'active' : ''}" onclick="selectChannel('${ch.id}')">
+      <div class="channel-item ${isActive ? 'active' : ''}" onclick="selectChannel('${ch.id}')" style="position: relative; padding-right: 28px;">
         <span class="channel-hash">#</span>
-        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;" title="${ch.studentName} - ${ch.subject}">
+        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px;" title="${ch.studentName} - ${ch.subject}">
           ${ch.studentName} - ${ch.subject}
         </span>
         <span class="channel-tag tag-${subjectClass}">${ch.subject}</span>
+        <span class="channel-delete" onclick="deleteChannel('${ch.id}', event)" style="position: absolute; right: 8px; cursor: pointer; color: var(--text-muted); font-size: 14px; display: none; width: 16px; height: 16px; align-items: center; justify-content: center; border-radius: 50%;">&times;</span>
       </div>
     `;
   }).join('');
 }
+
+// Delete channel workspace
+function deleteChannel(channelId, event) {
+  if (event) {
+    event.stopPropagation();
+  }
+  
+  const channel = state.channels.find(ch => ch.id === channelId);
+  if (!channel) return;
+  
+  if (confirm(`Are you sure you want to delete the workspace "${channel.studentName} - ${channel.subject}"? This will permanently delete all its chat history and sheets.`)) {
+    state.channels = state.channels.filter(ch => ch.id !== channelId);
+    
+    if (state.activeChannelId === channelId) {
+      if (state.channels.length > 0) {
+        state.activeChannelId = state.channels[0].id;
+      } else {
+        state.activeChannelId = null;
+      }
+    }
+    
+    saveState();
+    renderChannelsList();
+    renderChannelView();
+    renderDashboard();
+  }
+}
+window.deleteChannel = deleteChannel;
 
 // Select a channel and render its contents
 function selectChannel(channelId) {
@@ -533,7 +562,66 @@ function findSheetById(sheetId) {
 function checkForMistakeReporting(text) {
   const lowerText = text.toLowerCase();
   
-  // Match set/sheet ID. Supporting variations like "set 101", "set #101", "sheet 101", "oefenblad 101", etc.
+  // 1. Check if this is a mistake deletion/removal request
+  const isDeletion = lowerText.includes("remove") || lowerText.includes("delete") || lowerText.includes("clear") || lowerText.includes("schrap") || lowerText.includes("verwijder") || lowerText.includes("wissen");
+  
+  if (isDeletion) {
+    // Check if clearing all mistakes for active channel
+    if ((lowerText.includes("all") || lowerText.includes("alle")) && (lowerText.includes("mistake") || lowerText.includes("fout"))) {
+      const channel = state.channels.find(ch => ch.id === state.activeChannelId);
+      if (channel) {
+        const initialCount = state.mistakes.length;
+        state.mistakes = state.mistakes.filter(m => m.studentName.toLowerCase() !== channel.studentName.toLowerCase());
+        if (state.mistakes.length < initialCount) {
+          saveState();
+          if (state.activeView === "mistakes") renderMistakesView();
+          renderDashboard();
+          simulateAssistantReply(`I have cleared all logged mistakes for **${channel.studentName}**.`);
+          return true;
+        }
+      }
+    }
+    
+    // Otherwise, check for specific set and exercises to delete
+    const setMatch = lowerText.match(/(?:set|sheet|oefenblad|reeks|reeksnr|setnr)\s*#?\s*(\d+)/i);
+    if (setMatch) {
+      const sheetId = parseInt(setMatch[1]);
+      const result = findSheetById(sheetId);
+      if (result) {
+        const { channel, sheet } = result;
+        const textWithoutSet = lowerText.replace(setMatch[0], "");
+        const digitMatches = textWithoutSet.match(/\b\d+\b/g);
+        
+        if (digitMatches && digitMatches.length > 0) {
+          const removedNumbers = [];
+          digitMatches.forEach(numStr => {
+            const num = parseInt(numStr);
+            const targetTopicSegment = `Set #${sheetId} Q${num}`;
+            const initialLength = state.mistakes.length;
+            
+            state.mistakes = state.mistakes.filter(m => 
+              !(m.studentName.toLowerCase() === channel.studentName.toLowerCase() && 
+                m.topic.toLowerCase().includes(targetTopicSegment.toLowerCase()))
+            );
+            
+            if (state.mistakes.length < initialLength) {
+              removedNumbers.push(num);
+            }
+          });
+          
+          if (removedNumbers.length > 0) {
+            saveState();
+            if (state.activeView === "mistakes") renderMistakesView();
+            renderDashboard();
+            simulateAssistantReply(`I have removed the logged mistake(s) for **${channel.studentName}** on **Set #${sheetId}** in exercise(s): **${removedNumbers.join(', ')}**.`);
+            return true;
+          }
+        }
+      }
+    }
+  }
+
+  // 2. Otherwise, check for mistake logging request
   const setMatch = lowerText.match(/(?:set|sheet|oefenblad|reeks|reeksnr|setnr)\s*#?\s*(\d+)/i);
   if (!setMatch) return false;
   
@@ -579,6 +667,24 @@ function checkForMistakeReporting(text) {
     return true;
   }
   
+  // Try to find a custom explanation/instruction in the text (e.g. text after because/forgot/reasons)
+  let customExplanation = "";
+  const explanationKeywords = ["because", "since", "want", "omdat", "vergat", "forgot", "focus", "oefen", "practice", "practise", "wrote", "schreef", "instead of", "in plaats van", "reede", "uitleg", ":", "-", ";"];
+  let splitIndex = -1;
+  
+  explanationKeywords.forEach(keyword => {
+    const idx = lowerText.indexOf(keyword);
+    if (idx !== -1 && (splitIndex === -1 || idx < splitIndex)) {
+      splitIndex = idx;
+    }
+  });
+  
+  if (splitIndex !== -1) {
+    customExplanation = text.substring(splitIndex).trim();
+    // Clean leading punctuation
+    customExplanation = customExplanation.replace(/^[:\-;\s]+/, "").trim();
+  }
+  
   // Save mistakes to state
   const loggedMistakes = [];
   exerciseNumbers.forEach(num => {
@@ -588,12 +694,17 @@ function checkForMistakeReporting(text) {
     const cleanQuestion = exercise ? exercise.question.replace(/<[^>]*>/g, '').trim() : `Exercise ${num}`;
     const cleanSolution = answer ? answer.solution.replace(/<[^>]*>/g, '').trim() : '';
     
+    let description = `Exercise ${num}: "${cleanQuestion}" -> Expected: "${cleanSolution}"`;
+    if (customExplanation) {
+      description += `<br><br><strong>Parent Note / Guidance:</strong> "${customExplanation}"`;
+    }
+    
     const newMistake = {
       id: "m-" + Date.now() + "-" + num,
       studentName: channel.studentName,
       subject: channel.subject,
       topic: `${sheet.subject} (Set #${sheetId} Q${num})`,
-      description: `Exercise ${num}: "${cleanQuestion}" -> Expected: "${cleanSolution}"`,
+      description: description,
       date: new Date().toISOString().split('T')[0],
       status: "active"
     };
@@ -612,6 +723,9 @@ function checkForMistakeReporting(text) {
   
   const listStr = loggedMistakes.sort((a,b)=>a-b).join(", ");
   let replyText = `I have logged mistakes for **${channel.studentName}** on **Set #${sheetId}** (${sheet.subject}) in exercise(s): **${listStr}**. These are now added to the **Mistakes Log** for remediation.`;
+  if (customExplanation) {
+    replyText += `<br><em>Guidance captured: "${customExplanation}"</em>`;
+  }
   if (invalidNumbers.length > 0) {
     replyText += ` (Note: numbers ${invalidNumbers.join(', ')} were ignored because they are outside the exercise range of 1-${totalExercises}.)`;
   }

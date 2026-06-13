@@ -319,6 +319,15 @@ h1, h2, h3, h4, h5, h6 {
   border-color: rgba(255, 255, 255, 0.05);
 }
 
+.channel-item:hover .channel-delete {
+  display: inline-flex !important;
+}
+
+.channel-delete:hover {
+  color: var(--error) !important;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
 .channel-hash {
   margin-right: 8px;
   font-weight: bold;
@@ -716,6 +725,11 @@ h1, h2, h3, h4, h5, h6 {
   outline: none;
   border-color: var(--primary);
   background: rgba(255,255,255,0.05);
+}
+
+.form-input option, select option {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 /* Upload Area UI */
