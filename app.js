@@ -29,97 +29,9 @@ let state = {
 };
 
 // Initial setup data for Demo Mode
-const DEMO_CHANNELS = [
-  {
-    id: "ch-1",
-    studentName: "Laura",
-    grade: "Primary School - 6th Grade (6e Leerjaar)",
-    subject: "Mathematics",
-    textbook: "Reken Maar 6!",
-    messages: [
-      { sender: "assistant", text: "Hello! I am your HomeworkMaster. I have loaded the learning goals for **6th Grade Mathematics (Wiskunde)**. For *Reken Maar 6!*, Block 10 focuses on percentages, equalizing fractions, and volume calculations. Feel free to upload a textbook page/test, or type your instructions below!" },
-      { sender: "user", text: "We need to practice Block 10 extra. Especially fractions and percentages." },
-      { sender: "assistant", text: "Got it! I can generate 10 to 40 exercises that align with Block 10 of *Reken Maar 6!*. Choose the number of exercises in the wizard below and click 'Generate Sheet', or type 'generate 15 exercises'." }
-    ],
-    generatedSheets: [
-      {
-        id: 101,
-        title: "Oefenblad: Wiskunde - Breuken & Procenten",
-        grade: "Primary School - 6th Grade (6e Leerjaar)",
-        subject: "Mathematics",
-        textbook: "Reken Maar 6!",
-        exercises: [
-          { number: 1, question: "Bereken de som en vereenvoudig: <br>\\( \\frac{1}{3} + \\frac{1}{2} = ... \\)", space: true },
-          { number: 2, question: "Bereken de som en vereenvoudig: <br>\\( \\frac{3}{4} + \\frac{1}{6} = ... \\)", space: true },
-          { number: 3, question: "Hoeveel is 25% van € 200?", space: true },
-          { number: 4, question: "Zet de breuk om naar een percentage: <br>\\( \\frac{1}{5} \\) = ... %", space: false },
-          { number: 5, question: "Bereken het product: 2,5 &times; 4 = ...", space: true }
-        ],
-        answers: [
-          { number: 1, solution: "Gelijknamig maken op noemer 6: \\( \\frac{2}{6} + \\frac{3}{6} = \\frac{5}{6} \\)" },
-          { number: 2, solution: "Gelijknamig maken op noemer 12: \\( \\frac{9}{12} + \\frac{2}{12} = \\frac{11}{12} \\)" },
-          { number: 3, solution: "25% van € 200 = \\( \\frac{25}{100} \\times 200 = 50 \\)" },
-          { number: 4, solution: "\\( \\frac{1}{5} = \\frac{20}{100} = 20\\% \\)" },
-          { number: 5, solution: "2,5 &times; 4 = 10" }
-        ]
-      }
-    ]
-  },
-  {
-    id: "ch-2",
-    studentName: "Thomas",
-    grade: "Secondary School - 2nd Year (2e Jaar A-Stroom)",
-    subject: "Latin",
-    textbook: "Pegasus 2",
-    messages: [
-      { sender: "assistant", text: "Salvete! I have loaded the Latin vocabulary and grammar goals for **Pegasus 2** (Perfectum verb stems, accusativus cum infinitivo). What lessons or chapters would you like to practice today?" }
-    ],
-    generatedSheets: [
-      {
-        id: 102,
-        title: "Oefenblad: Latijnse Woordenschat",
-        grade: "Secondary School - 2nd Year (2e Jaar A-Stroom)",
-        subject: "Latin",
-        textbook: "Pegasus 2",
-        exercises: [
-          { number: 1, question: "Geef de Nederlandse betekenis: <b>\"dominus\"</b>", space: false },
-          { number: 2, question: "Geef de Nederlandse betekenis: <b>\"puella\"</b>", space: false },
-          { number: 3, question: "Geef de Nederlandse betekenis: <b>\"urbs\"</b>", space: false },
-          { number: 4, question: "Geef de Nederlandse betekenis: <b>\"miles\"</b>", space: false },
-          { number: 5, question: "Geef de Nederlandse betekenis: <b>\"magnus\"</b>", space: false }
-        ],
-        answers: [
-          { number: 1, solution: "meester / heer" },
-          { number: 2, solution: "meisje" },
-          { number: 3, solution: "stad" },
-          { number: 4, solution: "soldaat" },
-          { number: 5, solution: "groot" }
-        ]
-      }
-    ]
-  }
-];
+const DEMO_CHANNELS = [];
 
-const DEMO_MISTAKES = [
-  {
-    id: "m-1",
-    studentName: "Laura",
-    subject: "Mathematics",
-    topic: "Gelijknamige Breuken (Equal Fractions)",
-    description: "Vergeet de noemer gelijk te maken bij het optellen van breuken (schrijft bijv. 1/3 + 1/2 = 2/5 in plaats van 5/6).",
-    date: "2026-05-21",
-    status: "active"
-  },
-  {
-    id: "m-2",
-    studentName: "Thomas",
-    subject: "French",
-    topic: "Passé Composé met Être",
-    description: "Past het geslacht en getal van het voltooid deelwoord niet aan bij vrouwelijke/meervoudige onderwerpen (vertaalt 'Elle is gekomen' als 'Elle est venu' in plaats van 'venue').",
-    date: "2026-05-20",
-    status: "active"
-  }
-];
+const DEMO_MISTAKES = [];
 
 // Local Storage Helpers
 function saveState() {
@@ -138,29 +50,26 @@ function loadState() {
       state.settings = parsed.settings || state.settings;
       state.channels = parsed.channels || [];
       state.mistakes = parsed.mistakes || [];
+      
+      // Inject the demo sheets if missing from ch-1 / ch-2 (if they still exist) to facilitate immediate testing
+      state.channels.forEach(ch => {
+        if (ch.id === "ch-1" && (!ch.generatedSheets || ch.generatedSheets.length === 0)) {
+          const demoCh = DEMO_CHANNELS.find(d => d.id === "ch-1");
+          if (demoCh) ch.generatedSheets = JSON.parse(JSON.stringify(demoCh.generatedSheets));
+        }
+        if (ch.id === "ch-2" && (!ch.generatedSheets || ch.generatedSheets.length === 0)) {
+          const demoCh = DEMO_CHANNELS.find(d => d.id === "ch-2");
+          if (demoCh) ch.generatedSheets = JSON.parse(JSON.stringify(demoCh.generatedSheets));
+        }
+      });
     } catch (e) {
       console.error("Error loading localStorage state:", e);
     }
-  }
-  
-  // Set defaults if empty
-  if (state.channels.length === 0) {
-    state.channels = JSON.parse(JSON.stringify(DEMO_CHANNELS));
   } else {
-    // Inject the demo sheets if missing from ch-1 / ch-2 to facilitate immediate testing
-    state.channels.forEach(ch => {
-      if (ch.id === "ch-1" && (!ch.generatedSheets || ch.generatedSheets.length === 0)) {
-        const demoCh = DEMO_CHANNELS.find(d => d.id === "ch-1");
-        if (demoCh) ch.generatedSheets = JSON.parse(JSON.stringify(demoCh.generatedSheets));
-      }
-      if (ch.id === "ch-2" && (!ch.generatedSheets || ch.generatedSheets.length === 0)) {
-        const demoCh = DEMO_CHANNELS.find(d => d.id === "ch-2");
-        if (demoCh) ch.generatedSheets = JSON.parse(JSON.stringify(demoCh.generatedSheets));
-      }
-    });
-  }
-  if (state.mistakes.length === 0) {
+    // First time launching the app: initialize demo state
+    state.channels = JSON.parse(JSON.stringify(DEMO_CHANNELS));
     state.mistakes = [...DEMO_MISTAKES];
+    saveState();
   }
   
   // Fill default models if availableModels is empty
@@ -1681,14 +1590,42 @@ function renderSettingsView() {
       </div>
     </div>
 
-    <div class="dashboard-card" style="max-width: 600px;">
+    <div class="dashboard-card" style="max-width: 600px; margin-bottom: 24px;">
       <h3>Publishing on GitHub</h3>
       <p style="font-size: 13px; color: var(--text-secondary); margin-top: 8px; line-height: 1.5;">
         Want to host this application online for free? Since it is a static web app, you can host it using <strong>GitHub Pages</strong>. Read the <code>README.md</code> file in your project directory for quick step-by-step instructions.
       </p>
     </div>
+
+    <div class="dashboard-card" style="max-width: 600px; border-color: rgba(239, 68, 68, 0.2);">
+      <h3 style="color: var(--error);">⚠️ Danger Zone</h3>
+      <p style="font-size: 13px; color: var(--text-secondary); margin-top: 8px; line-height: 1.5; margin-bottom: 16px;">
+        Permanently clear all workspaces, chat histories, and recorded mistakes from your browser's local cache. This action cannot be undone.
+      </p>
+      <button class="btn btn-danger" onclick="resetAllAppData()" style="width: 100%; justify-content: center;">
+        🗑️ Reset All Application Data
+      </button>
+    </div>
   `;
 }
+
+function resetAllAppData() {
+  if (confirm("Are you sure you want to delete all workspaces, chat histories, and mistakes? This will completely wipe your local data and reset the application to a clean slate.")) {
+    localStorage.removeItem("homeworkmaster_state");
+    
+    // Wipe local in-memory data
+    state.channels = [];
+    state.mistakes = [];
+    state.activeChannelId = null;
+    state.currentSheet = null;
+    
+    saveState();
+    
+    alert("Application data successfully reset!");
+    switchView("dashboard");
+  }
+}
+window.resetAllAppData = resetAllAppData;
 
 function toggleCustomModelInput(val) {
   const group = document.getElementById("custom-model-group");
